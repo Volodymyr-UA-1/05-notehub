@@ -6,28 +6,25 @@ interface NoteListProps {
     onDelete: (id: string) => void;
 }
 
-// 1. Додаємо onDelete в деструктуризацію пропсів
 export default function NoteList({ notes, onDelete }: NoteListProps) {
-    if (!notes || notes.length === 0) return <p className={css.empty}>No notes found</p>;
+    if (notes.length === 0) {
+        return <p className={css.empty}>No notes found</p>;
+    }
 
     return (
         <ul className={css.list}>
             {notes.map((note) => (
-                <li key={note.id} className={css.listItem}>
-                    <h2 className={css.title}>{note.title}</h2>
-                    {note.content && <p className={css.content}>{note.content}</p>}
+                <li key={note.id} className={css.item}>
+                    <h3>{note.title}</h3>
+                    <p>{note.content}</p>
+                    <span className={css.tag}>{note.tag}</span>
 
-                    <div className={css.footer}>
-                        {note.tag && <span className={css.tag}>{note.tag}</span>}
-
-                        {/* 2. Додаємо кнопку видалення */}
-                        <button
-                            className={css.deleteBtn}
-                            onClick={() => onDelete(note.id)}
-                        >
-                            Delete
-                        </button>
-                    </div>
+                    <button
+                        className={css.deleteButton}
+                        onClick={() => onDelete(note.id)}
+                    >
+                        Delete
+                    </button>
                 </li>
             ))}
         </ul>
