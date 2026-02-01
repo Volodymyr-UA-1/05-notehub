@@ -41,7 +41,6 @@ export default function App() {
         },
     });
 
-    // 🔥 ОЦЯ ФУНКЦІЯ БУЛА ВІДСУТНЯ
     const handleDelete = (id: string) => {
         deleteMutation(id);
     };
