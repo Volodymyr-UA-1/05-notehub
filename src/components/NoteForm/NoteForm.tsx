@@ -2,10 +2,14 @@ import css from './NoteForm.module.css';
 import { Formik } from 'formik';
 import { useId } from "react";
 import * as Yup from 'yup';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createNote } from '../../services/noteService';
+import type { Note } from '../../types/note';
 
 interface NoteFormProps {
-    onCancel: () => void; // отримуємо функцію для кнопки Cancel
+    onCancel: () => void;
 }
+
 const validationSchema = Yup.object({
     title: Yup.string()
         .required('Title is required')
@@ -20,12 +24,31 @@ const validationSchema = Yup.object({
 
 export default function NoteForm({ onCancel }: NoteFormProps) {
     const fieldId = useId();
+    const queryClient = useQueryClient();
+    const { mutate, isPending } = useMutation({
+        mutationFn: createNote,
+        onSuccess: () => {
+            // Оновлюємо список нотаток у кеші
+            queryClient.invalidateQueries({
+                queryKey: ['notes'],
+                exact: false
+            });
+            // Закриваємо модалку
+            onCancel();
+        },
+        onError: (error) => {
+            console.error("Помилка при створенні:", error);
+            alert("Не вдалося створити нотатку.");
+        }
+    });
 
     return (
         <Formik
             initialValues={{ title: '', content: '', tag: 'Todo' }}
             validationSchema={validationSchema}
-            onSubmit={(values) => console.log(values)}
+            onSubmit={(values) => {
+                mutate(values as Omit<Note, 'id' | 'createdAt' | 'updatedAt'>);
+            }}
         >
             {({ handleSubmit, handleChange, values, errors, touched }) => (
                 <form className={css.form} onSubmit={handleSubmit}>
@@ -84,11 +107,18 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
                             type="button"
                             className={css.cancelButton}
                             onClick={onCancel}
+                            // Блокуємо, щоб не клікнули під час запиту
+                            disabled={isPending}
                         >
                             Cancel
                         </button>
-                        <button type="submit" className={css.submitButton} disabled={false}>
-                            Create note
+                        <button
+                            type="submit"
+                            className={css.submitButton}
+                            // Змінюємо текст та стан кнопки під час завантаження
+                            disabled={isPending}
+                        >
+                            {isPending ? 'Creating...' : 'Create note'}
                         </button>
                     </div>
                 </form>

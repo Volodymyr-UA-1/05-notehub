@@ -1,78 +1,75 @@
 import css from "./App.module.css";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
 import NoteList from "../NoteList/NoteList";
 import Modal from "../Modal/Modal";
-import type { Note } from "../../types/note";
-import { fetchNotes } from "../../services/noteService";
-
-interface FetchNotesResponse {
-    notes: Note[];
-    totalPages: number;
-}
+import { fetchNotes, deleteNote } from "../../services/noteService";
 
 const perPage = 12;
 
-const fetchNotes = async (search: string, page: number) => {
-    const response = await axios.get("https://notehub-public.goit.study/api/notes", {
-        params: { search, page, perPage },
-        headers: {
-            Authorization: `Bearer YOUR_TOKEN_HERE`,
-        },
-    });
-    return response.data;
-};
-
 export default function App() {
+    const queryClient = useQueryClient();
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [isModalOpen, setIsModalOpen] = useState(false); // стан модалки
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // 1. Отримуємо дані
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["notes", search, page],
+        queryFn: () => fetchNotes({ search, page, perPage }),
+    });
+
+    // 2. Мутація для видалення
+    const { mutate: deleteMutation } = useMutation({
+        mutationFn: (id: string) => deleteNote(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["notes"] });
+        },
+    });
 
     const handleSearch = (value: string) => {
         setSearch(value);
         setPage(1);
     };
 
-    const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
-        queryKey: ["notes", search, page],
-        queryFn: () => fetchNotes(search, page),
-        enabled: true,
-    });
+    const handleDelete = (id: string) => {
+        deleteMutation(id);
+    };
 
     return (
         <div className={css.app}>
             <header className={css.toolbar}>
                 <SearchBox onSearch={handleSearch} />
 
-                {isLoading && <p>Loading...</p>}
-                {isError && <p>Error 😢</p>}
-
-                {data?.notes && data.notes.length > 0 && (
-                    <NoteList notes={data.notes} />
-                )}
-
-                < Pagination
+                <Pagination
                     page={page}
                     totalPages={data?.totalPages ?? 0}
                     onPageChange={setPage}
                 />
 
-                {/* Кнопка відкриття модалки */}
                 <button
                     className={css.button}
                     onClick={() => setIsModalOpen(true)}
                 >
                     Create note +
                 </button>
-
-                {/* Модалка рендериться лише якщо isModalOpen = true */}
-                {isModalOpen && (
-                    <Modal onClose={() => setIsModalOpen(false)} />
-                )}
             </header>
+
+            {isLoading && !data && <p>Loading...</p>}
+            {isError && <p>Error 😢</p>}
+
+            {/* ВИПРАВЛЕННЯ: додано перевірку на існування data та передачу onDelete */}
+            {data?.notes && data.notes.length > 0 ? (
+                <NoteList notes={data.notes} onDelete={handleDelete} />
+            ) : (
+                !isLoading && <p>No notes found</p>
+            )}
+
+            {isModalOpen && (
+                <Modal onClose={() => setIsModalOpen(false)} />
+            )}
         </div>
     );
 }

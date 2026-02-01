@@ -1,20 +1,14 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import type { Note } from "../types/note";
+import.meta.env;
 
-/* =======================
-   Axios instance
-======================= */
-
+console.log("Мій токен:", import.meta.env.VITE_NOTEHUB_TOKEN);
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
   headers: {
-    Authorization: `Bearer YOUR_TOKEN_HERE`, //свій токен
+    Authorization: `Bearer ${import.meta.env.VITE_NOTEHUB_TOKEN}`, // свій токен
   },
 });
-
-/* =======================
-   Types
-======================= */
 
 export interface FetchNotesResponse {
   notes: Note[];
@@ -27,24 +21,15 @@ export interface FetchNotesParams {
   perPage?: number;
 }
 
-/* =======================
-   API functions
-======================= */
-
-/**
- * Отримати список нотаток
- * підтримує пошук і пагінацію
- */
 export const fetchNotes = async ({
   search = "",
   page = 1,
   perPage = 12,
 }: FetchNotesParams): Promise<FetchNotesResponse> => {
-  const response: AxiosResponse<FetchNotesResponse> = await api.get("/notes", {
+  const { data } = await api.get<FetchNotesResponse>("/notes", {
     params: { search, page, perPage },
   });
-
-  return response.data;
+  return data;
 };
 
 /**
@@ -53,14 +38,14 @@ export const fetchNotes = async ({
 export const createNote = async (
   noteData: Omit<Note, "id" | "createdAt" | "updatedAt">,
 ): Promise<Note> => {
-  const response: AxiosResponse<Note> = await api.post("/notes", noteData);
-  return response.data;
+  const { data } = await api.post<Note>("/notes", noteData);
+  return data;
 };
 
 /**
  * Видалити нотатку за ID
  */
 export const deleteNote = async (id: string): Promise<Note> => {
-  const response: AxiosResponse<Note> = await api.delete(`/notes/${id}`);
-  return response.data;
+  const { data } = await api.delete<Note>(`/notes/${id}`);
+  return data;
 };
