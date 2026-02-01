@@ -7,6 +7,7 @@ import Pagination from "../Pagination/Pagination";
 import NoteList from "../NoteList/NoteList";
 import Modal from "../Modal/Modal";
 import type { Note } from "../../types/note";
+import { fetchNotes } from "../../services/noteService";
 
 interface FetchNotesResponse {
     notes: Note[];
@@ -49,9 +50,11 @@ export default function App() {
                 {isLoading && <p>Loading...</p>}
                 {isError && <p>Error 😢</p>}
 
-                <NoteList notes={data?.notes ?? []} />
+                {data?.notes && data.notes.length > 0 && (
+                    <NoteList notes={data.notes} />
+                )}
 
-                <Pagination
+                < Pagination
                     page={page}
                     totalPages={data?.totalPages ?? 0}
                     onPageChange={setPage}
