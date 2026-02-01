@@ -7,5 +7,5 @@ interface EmptyStateProps {
 export default function EmptyState({
     message = "No notes found",
 }: EmptyStateProps) {
-    return <p className={css.empty}>{message}</p>;
+    return <p className={css.emptyState}>{message}</p>;
 }

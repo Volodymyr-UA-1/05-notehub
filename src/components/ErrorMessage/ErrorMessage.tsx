@@ -7,5 +7,5 @@ interface ErrorMessageProps {
 export default function ErrorMessage({
     message = "Something went wrong 😢",
 }: ErrorMessageProps) {
-    return <p className={css.error}>{message}</p>;
+    return <p className={css.errorMessage}>{message}</p>;
 }
