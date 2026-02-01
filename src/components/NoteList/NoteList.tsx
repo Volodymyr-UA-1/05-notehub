@@ -1,11 +1,5 @@
 import css from "./NoteList.module.css";
-
-export interface Note {
-    id: number;
-    title: string;
-    content?: string;
-    tag?: string;
-}
+import type { Note } from "../../types/note";
 
 interface NoteListProps {
     notes: Note[];

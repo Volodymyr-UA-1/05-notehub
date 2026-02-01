@@ -5,11 +5,7 @@ import axios from "axios";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
 import NoteList from "../NoteList/NoteList";
-
-interface Note {
-    id: number;
-    title: string;
-}
+import type { Note } from "../../types/note";
 
 interface FetchNotesResponse {
     notes: Note[];
@@ -18,14 +14,13 @@ interface FetchNotesResponse {
 
 const perPage = 12;
 
-const fetchNotes = async (
-    search: string,
-    page: number
-): Promise<FetchNotesResponse> => {
-    const response = await axios.get(
-        "https://notehub-public.goit.study/api/notes",
-        { params: { search, page, perPage } }
-    );
+const fetchNotes = async (search: string, page: number) => {
+    const response = await axios.get("https://notehub-public.goit.study/api/notes", {
+        params: { search, page, perPage },
+        headers: {
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // замінити на свій токен
+        },
+    });
     return response.data;
 };
 
@@ -41,7 +36,7 @@ export default function App() {
     const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
         queryKey: ["notes", search, page],
         queryFn: () => fetchNotes(search, page),
-        enabled: true, // або search.trim() !== "" якщо хочеш пошук тільки після введення
+        enabled: true,
         placeholderData: keepPreviousData,
     });
 
