@@ -1,19 +1,28 @@
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import css from './Modal.module.css';
-import NoteForm from '../NoteForm/NoteForm';
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import css from "./Modal.module.css";
 
 interface ModalProps {
     onClose: () => void;
+    children: React.ReactNode;
 }
 
-export default function Modal({ onClose }: ModalProps) {
+export default function Modal({ onClose, children }: ModalProps) {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+            if (e.key === "Escape") onClose();
         };
-        document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
+
+        document.addEventListener("keydown", handleEscape);
+
+        // 🔒 блокуємо скрол
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+            document.body.style.overflow = originalOverflow;
+        };
     }, [onClose]);
 
     return createPortal(
@@ -21,14 +30,13 @@ export default function Modal({ onClose }: ModalProps) {
             className={css.backdrop}
             role="dialog"
             aria-modal="true"
-            onClick={onClose} // клік на бекдроп закриває модалку
+            onClick={onClose}
         >
             <div
                 className={css.modal}
-                onClick={(e) => e.stopPropagation()} // щоб клік усередині модалки не закривав її
+                onClick={(e) => e.stopPropagation()}
             >
-                {/* Передаємо onClose у NoteForm */}
-                <NoteForm onCancel={onClose} />
+                {children}
             </div>
         </div>,
         document.body
