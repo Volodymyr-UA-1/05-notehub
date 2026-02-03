@@ -2,7 +2,6 @@ import axios from "axios";
 import type { Note } from "../types/note";
 import.meta.env;
 
-console.log("Мій токен:", import.meta.env.VITE_NOTEHUB_TOKEN);
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
   headers: {
@@ -32,9 +31,7 @@ export const fetchNotes = async ({
   return data;
 };
 
-/**
- * Створити нову нотатку
- */
+//  Створити нову нотатку
 export const createNote = async (
   noteData: Omit<Note, "id" | "createdAt" | "updatedAt">,
 ): Promise<Note> => {
@@ -42,9 +39,7 @@ export const createNote = async (
   return data;
 };
 
-/**
- * Видалити нотатку за ID
- */
+//  Видалити нотатку за ID
 export const deleteNote = async (id: string): Promise<Note> => {
   const { data } = await api.delete<Note>(`/notes/${id}`);
   return data;

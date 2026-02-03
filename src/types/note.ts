@@ -1,6 +1,6 @@
 export type NoteTag = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
 
-// Сутність нотатки
+// нотаткa
 export interface Note {
   id: string;
   title: string;
